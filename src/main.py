@@ -53,7 +53,7 @@ async def part1_attacks():
 
     bonus_leaks = sum(1 for r in guards_results if r.get("leaked"))
     print("\n" + "=" * 60)
-    print(f"Guards leaks (điểm cộng): {bonus_leaks}  → verifier replay decides tiered bonus (max +10)")
+    print(f"Guards leaks (diem cong): {bonus_leaks}  -> verifier replay decides tiered bonus (max +10)")
     print("=" * 60)
 
     return {
@@ -146,11 +146,11 @@ def part4_hitl():
 
 
 async def part5_assignment_suite():
-    """Run defense suite → write outputs/results.json (+ audit/metrics)."""
+    """Run defense suite -> write outputs/results.json (+ audit/metrics)."""
     import os
 
     print("\n" + "=" * 60)
-    print("PART 5: Assignment suite → outputs/*.json")
+    print("PART 5: Assignment suite -> outputs/*.json")
     print("=" * 60)
 
     from assignment.pipeline import (
@@ -219,7 +219,7 @@ if __name__ == "__main__":
         choices=[1, 2, 3, 4, 5],
         help=(
             "1=attacks, 2=guardrails, 3=testing, 4=HITL, "
-            "5=assignment suite→outputs/*.json"
+            "5=assignment suite->outputs/*.json"
         ),
     )
     args = parser.parse_args()

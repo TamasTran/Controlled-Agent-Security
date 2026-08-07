@@ -25,7 +25,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+node_modules/
+package-lock.json
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -144,13 +145,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# Local grade / run outputs
-outputs/grade_report.json
-outputs/results.json
-outputs/attack_results.json
-outputs/audit_log.json
-outputs/metrics.json
-
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -212,3 +206,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+package
+package-lock.json
+package.json

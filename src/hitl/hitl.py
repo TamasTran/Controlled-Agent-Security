@@ -66,31 +66,42 @@ class ConfidenceRouter:
             RoutingDecision with routing action and metadata
         """
         # TODO 11: Implement routing logic
-        #
-        # 1. Check if action_type is in HIGH_RISK_ACTIONS
-        #    -> If yes: always escalate (action="escalate", priority="high",
-        #       requires_human=True, reason="High-risk action: {action_type}")
-        #
-        # 2. Check confidence thresholds:
-        #    - confidence >= 0.9:
-        #      action="auto_send", priority="low",
-        #      requires_human=False, reason="High confidence"
-        #
-        #    - 0.7 <= confidence < 0.9:
-        #      action="queue_review", priority="normal",
-        #      requires_human=True, reason="Medium confidence — needs review"
-        #
-        #    - confidence < 0.7:
-        #      action="escalate", priority="high",
-        #      requires_human=True, reason="Low confidence — escalating"
 
-        return RoutingDecision(
-            action="auto_send",
-            confidence=confidence,
-            reason="TODO: implement routing logic",
-            priority="low",
-            requires_human=False,
-        )  # TODO: Replace with implementation
+        # 1. Check if action_type is in HIGH_RISK_ACTIONS — always escalate
+        if action_type in HIGH_RISK_ACTIONS:
+            return RoutingDecision(
+                action="escalate",
+                confidence=confidence,
+                reason=f"High-risk action: {action_type}",
+                priority="high",
+                requires_human=True,
+            )
+
+        # 2. Check confidence thresholds
+        if confidence >= self.HIGH_THRESHOLD:
+            return RoutingDecision(
+                action="auto_send",
+                confidence=confidence,
+                reason="High confidence",
+                priority="low",
+                requires_human=False,
+            )
+        elif confidence >= self.MEDIUM_THRESHOLD:
+            return RoutingDecision(
+                action="queue_review",
+                confidence=confidence,
+                reason="Medium confidence — needs review",
+                priority="normal",
+                requires_human=True,
+            )
+        else:
+            return RoutingDecision(
+                action="escalate",
+                confidence=confidence,
+                reason="Low confidence — escalating",
+                priority="high",
+                requires_human=True,
+            )
 
 
 # ============================================================
@@ -111,33 +122,33 @@ class ConfidenceRouter:
 hitl_decision_points = [
     {
         "id": 1,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
-        "approval_path": "TODO: Explain approve, reject and timeout behavior",
-        "audit_fields": "TODO: List correlation ID, intent, diff and reviewer decision",
+        "name": "Large Money Transfer (>50M VND)",
+        "trigger": "Agent proposes a money transfer exceeding 50,000,000 VND or international wire transfer",
+        "hitl_model": "human-in-the-loop",
+        "context_needed": "Source account, destination account, amount, recipient name, transfer reason, customer verification status, transaction history (last 30 days)",
+        "example": "Customer requests transfer of 200,000,000 VND to a new beneficiary account that has never been used before. The agent detects high-value + new recipient and routes to a human reviewer.",
+        "approval_path": "Approve -> execute transfer with OTP confirmation; Reject -> notify customer with reason code; Timeout (5 min) -> auto-reject with message 'Please visit a branch for large transfers'",
+        "audit_fields": "correlation_id (UUID), intent='transfer_money', proposed_action={'from': account_id, 'to': beneficiary, 'amount': 200000000, 'currency': 'VND'}, reviewer_id, decision={'status': 'approved|rejected|timeout', 'timestamp': ISO8601, 'reason': str}",
     },
     {
         "id": 2,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
-        "approval_path": "TODO: Explain approve, reject and timeout behavior",
-        "audit_fields": "TODO: List correlation ID, intent, diff and reviewer decision",
+        "name": "Account Closure / Data Deletion",
+        "trigger": "Agent receives request to close an account, delete customer data, or remove all transaction history",
+        "hitl_model": "human-in-the-loop",
+        "context_needed": "Account type, balance, pending transactions, linked services (auto-pay, cards), customer identity verification, reason for closure",
+        "example": "Customer asks to close their savings account which still has a balance of 5,000,000 VND and 2 pending auto-debit payments. Agent flags for mandatory human review before any irreversible action.",
+        "approval_path": "Approve -> initiate closure workflow (settle balance, cancel linked services, issue confirmation); Reject -> inform customer of blocking conditions; Timeout (10 min) -> auto-reject, ask customer to call hotline or visit branch",
+        "audit_fields": "correlation_id (UUID), intent='close_account', proposed_action={'account_id': str, 'account_type': 'savings', 'balance': 5000000, 'pending_txns': 2}, reviewer_id, decision={'status': 'approved|rejected|timeout', 'timestamp': ISO8601, 'notes': str}",
     },
     {
         "id": 3,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
-        "approval_path": "TODO: Explain approve, reject and timeout behavior",
-        "audit_fields": "TODO: List correlation ID, intent, diff and reviewer decision",
+        "name": "Suspicious Login / Password Change from New Device",
+        "trigger": "Agent detects a password change or sensitive info update request from an unrecognized device, IP, or location -- OR two guardrail layers disagree on whether to block",
+        "hitl_model": "human-as-tiebreaker",
+        "context_needed": "Device fingerprint, IP geolocation, login history, time since last password change, whether MFA was passed, guardrail layer verdicts (if tiebreaker scenario)",
+        "example": "Customer requests password change from a new device in a different city. Input guardrail says PASS (legitimate request), but anomaly detection flags it as suspicious. Human reviewer breaks the tie.",
+        "approval_path": "Approve -> allow password change + send SMS/email confirmation to registered contacts; Reject -> lock account temporarily + notify customer via registered channel; Timeout (3 min) -> auto-reject (fail-closed for security), require in-branch identity verification",
+        "audit_fields": "correlation_id (UUID), intent='change_password', proposed_action={'device': fingerprint, 'ip': str, 'location': str}, guardrail_verdicts={'input': 'pass', 'anomaly': 'flag'}, reviewer_id, decision={'status': 'approved|rejected|timeout', 'timestamp': ISO8601, 'risk_score': float}",
     },
 ]
 

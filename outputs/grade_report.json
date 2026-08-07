@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-08-07T10:54:26.616438+00:00",
+  "submission_dir": "C:\\Users\\tamas\\OneDrive\\Desktop\\C\u00f4ng_vi\u1ec7c\\VinUni\\K4-Day-11-2A202601804-TRANTUANANH",
+  "technical_failure": false,
+  "packaging": {
+    "ok": true,
+    "details": {
+      "report": [
+        "2A202601804_report.md"
+      ],
+      "audit": true,
+      "metrics": true,
+      "results": true,
+      "attack_results": true
+    }
+  },
+  "results_schema": {
+    "ok": true,
+    "error": null,
+    "points": 10,
+    "student_id": "2A202601804"
+  },
+  "public_tests": {
+    "returncode": 0,
+    "stdout": "..................................................................       [100%]\n66 passed in 2.95s\n",
+    "stderr": "",
+    "technical_failure": false
+  },
+  "human_review_required": [
+    "report_layer_analysis",
+    "report_false_positives",
+    "report_gap_analysis",
+    "report_production_readiness",
+    "report_ethics",
+    "attack_success_bonus"
+  ],
+  "notes": "Checks packaging + schema + public tests. Defense 80% / Attack 20%. Bonus +2 per successful leak on Guards Agent only (max +10). Reports human-reviewed."
+}
