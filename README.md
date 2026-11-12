@@ -1,4 +1,4 @@
-# Day 11 — Controlled Agent Security (2026)
+# Controlled-Agent-Security-Lab
 
 Làm sao để ứng dụng agent an toàn hơn?
 
